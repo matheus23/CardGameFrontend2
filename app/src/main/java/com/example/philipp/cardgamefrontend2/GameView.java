@@ -1,22 +1,27 @@
 package com.example.philipp.cardgamefrontend2;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
-public class GameView extends SurfaceView {
+import com.example.philipp.cardgamefrontend2.graphic.DeckVisuals;
+import com.example.philipp.cardgamefrontend2.logic.Card;
+import com.example.philipp.cardgamefrontend2.logic.CardStack;
+import com.example.philipp.cardgamefrontend2.logic.MauMauTable;
+
+public class GameView extends SurfaceView implements View.OnTouchListener {
 
     private final Paint paint = new Paint();
     private ResourceLoader res;
     private SurfaceHolder holder;
 
-    private CardStack handcards;
+    private MauMauTable table;
 
     // Wenn nicht alle Konstruktoren vorhanden sind, kann es sein das die App crasht...
     public GameView(Context ctx) {
@@ -36,7 +41,7 @@ public class GameView extends SurfaceView {
 
     public void init(Context ctx) {
         res = new ResourceLoader(ctx, ctx.getResources());
-        handcards = (new CardStack()).shuffle().takeFromTop(4);
+        table = new MauMauTable(res, paint);
 
         holder = getHolder();
         holder.addCallback(new SurfaceHolder.Callback() {
@@ -55,36 +60,33 @@ public class GameView extends SurfaceView {
             public void surfaceDestroyed(SurfaceHolder holder) {
             }
         });
+        this.setOnTouchListener(this);
     }
 
     @Override
     public void draw(Canvas canvas) {
-        paint.setColor(Color.BLACK);
+        paint.setColor(Color.DKGRAY);
         paint.setAlpha(255);
         paint.setStrokeWidth(1);
+        canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+        paint.setColor(Color.WHITE);
+        table.draw(canvas, paint);
+    }
 
-        Card[] cards = new Card[handcards.getCards().size()];
-        handcards.getCards().toArray(cards);
-        for (int i = 0; i < cards.length; i++) {
-            drawCard(i * 100, cards[i], canvas, paint);
+    private void repaint() {
+        Canvas c = null;
+        try {
+            c = holder.lockCanvas();
+            draw(c);
+        } finally {
+            if (c != null) holder.unlockCanvasAndPost(c);
         }
     }
 
-    public void drawCard(int offset, Card card, Canvas canvas, Paint paint) {
-        Bitmap cardBitmap = res.getCardBitmap(card.color, card.type);
-        Rect cardRect = getBitmapRect(cardBitmap);
-        Rect viewRect = new Rect(cardRect);
-        viewRect.offset(offset, 0);
-        canvas.drawBitmap(cardBitmap, cardRect, viewRect, paint);
-    }
-
-    private Rect getBitmapRect(Bitmap bm) {
-        Rect src = new Rect();
-        src.left = 0;
-        src.right = bm.getWidth();
-        src.top = 0;
-        src.bottom = bm.getHeight();
-        return src;
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (table.onTouch(v, event)) repaint();
+        return true;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.example.philipp.cardgamefrontend2;
+package com.example.philipp.cardgamefrontend2.logic;
 
 public class Card {
 

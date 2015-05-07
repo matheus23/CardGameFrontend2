@@ -2,71 +2,65 @@ package com.example.philipp.cardgamefrontend2;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.DisplayMetrics;
+
+import com.caverock.androidsvg.SVG;
+import com.caverock.androidsvg.SVGParseException;
+import com.example.philipp.cardgamefrontend2.logic.CardColor;
 
 public class ResourceLoader {
 
-    // references to our images
-    private final Integer[] cards = {
-            R.drawable.n2_of_clubs, R.drawable.n2_of_diamonds, R.drawable.n2_of_hearts, R.drawable.n2_of_spades,
-            R.drawable.n3_of_clubs, R.drawable.n3_of_diamonds, R.drawable.n3_of_hearts, R.drawable.n3_of_spades,
-            R.drawable.n4_of_clubs, R.drawable.n4_of_diamonds, R.drawable.n4_of_hearts, R.drawable.n4_of_spades,
-            R.drawable.n5_of_clubs, R.drawable.n5_of_diamonds, R.drawable.n5_of_hearts, R.drawable.n5_of_spades,
-            R.drawable.n6_of_clubs, R.drawable.n6_of_diamonds, R.drawable.n6_of_hearts, R.drawable.n6_of_spades,
-            R.drawable.n7_of_clubs, R.drawable.n7_of_diamonds, R.drawable.n7_of_hearts, R.drawable.n7_of_spades,
-            R.drawable.n8_of_clubs, R.drawable.n8_of_diamonds, R.drawable.n8_of_hearts, R.drawable.n8_of_spades,
-            R.drawable.n9_of_clubs, R.drawable.n9_of_diamonds, R.drawable.n9_of_hearts, R.drawable.n9_of_spades,
-            R.drawable.n10_of_clubs, R.drawable.n10_of_diamonds, R.drawable.n10_of_hearts, R.drawable.n10_of_spades,
-            R.drawable.ace_of_clubs, R.drawable.ace_of_diamonds, R.drawable.ace_of_hearts, R.drawable.ace_of_spades,
-            R.drawable.jack_of_clubs, R.drawable.jack_of_diamonds, R.drawable.jack_of_hearts, R.drawable.jack_of_spades,
-            R.drawable.queen_of_clubs, R.drawable.queen_of_diamonds, R.drawable.queen_of_hearts, R.drawable.queen_of_spades,
-            R.drawable.king_of_clubs, R.drawable.king_of_diamonds, R.drawable.king_of_hearts, R.drawable.king_of_spades,
-    };
+    private static final Integer[] colorRaws = { R.raw.clubs, R.raw.diamonds, R.raw.hearts, R.raw.spades };
+    private static final Integer[] aceRaws = { R.raw.ace_clubs, R.raw.ace_diamonds, R.raw.ace_hearts, R.raw.ace_spades };
+    private static final Integer[] jackRaws = { R.raw.jack_clubs, R.raw.jack_diamonds, R.raw.jack_hearts, R.raw.jack_spades };
+    private static final Integer[] queenRaws = { R.raw.queen_clubs, R.raw.queen_diamonds, R.raw.queen_hearts, R.raw.queen_spades };
+    private static final Integer[] kingRaws = { R.raw.king_clubs, R.raw.king_diamonds, R.raw.king_hearts, R.raw.king_spades };
 
-    //private final Bitmap[] cardBitmaps;
+    private final SVG[] cardColors = new SVG[4];
+    private final SVG[] cardAces = new SVG[4];
+    private final SVG[] cardJacks = new SVG[4];
+    private final SVG[] cardQueens = new SVG[4];
+    private final SVG[] cardKings = new SVG[4];
+
+    public SVG emptyCard;
+    public SVG stackSpace;
 
     public ResourceLoader(Context context, Resources resources) {
-        DisplayMetrics display = context.getResources().getDisplayMetrics();
-        //cardBitmaps = new Bitmap[cards.length];
-        for (int i = 0; i < cards.length; i++) {
-            //cardBitmaps[i] = loadBitmap(resources, cards[i], display.widthPixels/6, display.heightPixels/6);
+        try {
+            emptyCard = SVG.getFromResource(context.getResources(), R.raw.empty_card);
+            stackSpace = SVG.getFromResource(context.getResources(), R.raw.stack_space);
+            loadSVGArray(context, cardColors, colorRaws);
+            loadSVGArray(context, cardAces, aceRaws);
+            loadSVGArray(context, cardJacks, jackRaws);
+            loadSVGArray(context, cardQueens, queenRaws);
+            loadSVGArray(context, cardKings, kingRaws);
+        } catch (SVGParseException e) {
+            e.printStackTrace();
         }
     }
 
-    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
+    private void loadSVGArray(Context ctx, SVG[] arr, Integer[] ids) throws SVGParseException {
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = SVG.getFromResource(ctx, ids[i]);
         }
-
-        return inSampleSize;
     }
 
-    private Bitmap loadBitmap(Resources resources, int id, int reqWidth, int reqHeight) {
-        BitmapFactory.Options opt = new BitmapFactory.Options();
-        opt.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(resources, id, opt);
-        opt.inSampleSize = calculateInSampleSize(opt, reqWidth, reqHeight);
-        opt.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(resources, id, opt);
+    public SVG getColor(CardColor color) {
+        return cardColors[color.ordinal()];
     }
-/*
-    public Bitmap getCardBitmap(CardColor col, CardType type) {
-        return cardBitmaps[type.ordinal() * 4 + col.ordinal()]; // MAAAAAAGIIIIIC
-    }*/
+
+    public SVG getAceInner(CardColor color) {
+        return cardAces[color.ordinal()];
+    }
+
+    public SVG getJackInner(CardColor color) {
+        return cardJacks[color.ordinal()];
+    }
+
+    public SVG getQueenInner(CardColor color) {
+        return cardQueens[color.ordinal()];
+    }
+
+    public SVG getKingInner(CardColor color) {
+        return cardKings[color.ordinal()];
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.philipp.cardgamefrontend2;
+package com.example.philipp.cardgamefrontend2.logic;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,5 +45,9 @@ public class CardStack {
 
     public Stack<Card> getCards() {
         return cards;
+    }
+
+    public int size() {
+        return cards.size();
     }
 }
